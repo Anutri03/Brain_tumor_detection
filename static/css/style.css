@@ -1,0 +1,349 @@
+/* General styles */
+:root {
+    --primary-color: #2563eb;
+    --secondary-color: #3b82f6;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --background-light: #f8fafc;
+    --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--background-light);
+    color: var(--text-primary);
+    line-height: 1.5;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.timestamp {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+/* Results grid */
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Result cards */
+.result-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    padding: 1.25rem;
+    background-color: var(--background-light);
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.card-header i {
+    font-size: 1.25rem;
+    color: var(--primary-color);
+    margin-right: 0.75rem;
+}
+
+.card-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+}
+
+/* Primary Diagnosis */
+.primary-diagnosis .diagnosis {
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.diagnosis h3 {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.confidence-indicator {
+    background: #e2e8f0;
+    border-radius: 9999px;
+    height: 0.5rem;
+    position: relative;
+    margin: 1rem 0;
+}
+
+.confidence-bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background: var(--success-color);
+    border-radius: 9999px;
+    transition: width 0.3s ease;
+}
+
+.confidence-value {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+/* Classification Probabilities */
+.probability-analysis {
+    padding-bottom: 1.5rem;
+}
+
+.probabilities {
+    padding: 1.5rem;
+}
+
+.probability-item {
+    margin-bottom: 1.25rem;
+}
+
+.probability-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.class-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.probability-value-text {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.probability-bar-container {
+    height: 0.5rem;
+    background: #e2e8f0;
+    border-radius: 9999px;
+    overflow: hidden;
+}
+
+.probability-bar {
+    height: 100%;
+    background: var(--secondary-color);
+    border-radius: 9999px;
+    transition: width 0.3s ease;
+}
+
+.probability-bar.active {
+    background: var(--primary-color);
+}
+
+/* Scan Analysis */
+.scan-analysis {
+    grid-column: 1 / -1;
+}
+
+.scan-container {
+    padding: 1.5rem;
+}
+
+.scan-image {
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.scan-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.scan-info {
+    display: grid;
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: start;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--background-light);
+    border-radius: 8px;
+}
+
+.info-item i {
+    color: var(--primary-color);
+    margin-top: 0.25rem;
+}
+
+/* Analysis Summary */
+.analysis-summary {
+    grid-column: 1 / -1;
+}
+
+.summary-content {
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.summary-section h3 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-size: 1.125rem;
+}
+
+.summary-section ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.summary-section li {
+    margin-bottom: 0.75rem;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.summary-section li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: var(--primary-color);
+}
+
+/* Actions */
+.actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.button.primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.button.secondary {
+    background: white;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+}
+
+.button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    padding: 2rem 1rem;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+    margin-top: 3rem;
+}
+
+.footer p {
+    margin: 0.5rem 0;
+    color: var(--text-secondary);
+}
+
+.disclaimer {
+    font-size: 0.875rem;
+    max-width: 600px;
+    margin: 0.5rem auto;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .container {
+        margin: 1rem auto;
+    }
+
+    .results-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .header h1 {
+        font-size: 2rem;
+    }
+
+    .summary-content {
+        grid-template-columns: 1fr;
+    }
+
+    .actions {
+        flex-direction: column;
+    }
+
+    .button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Print styles */
+@media print {
+    body {
+        background: white;
+    }
+
+    .container {
+        margin: 0;
+        padding: 0;
+    }
+
+    .actions {
+        display: none;
+    }
+
+    .result-card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #e2e8f0;
+    }
+} 

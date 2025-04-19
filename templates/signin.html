@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login Page</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+      }
+
+      body {
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .container {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        background: #fff;
+        background-image: url('/static/images/josh-riemer-OH5BRdggi2w-unsplash.jpg');
+        background-size: cover;
+        background-position: center;
+      }
+
+      .background-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(33, 33, 33, 0.84) 0%, rgba(66, 66, 66, 0.24) 100%);
+        z-index: 1;
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        padding: 0 20px;
+      }
+
+      .login-section {
+        width: 460px;
+        height: auto;
+        min-height: 500px;
+        background: #FAFAFA;
+        padding: 40px;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .header {
+        margin-bottom: 24px;
+      }
+
+      .header h2 {
+        font-size: 16px;
+        color: #000;
+        margin-bottom: 4px;
+      }
+
+      .header h1 {
+        font-size: 32px;
+        color: #000;
+      }
+
+      .alert {
+        padding: 12px;
+        margin-bottom: 16px;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      .alert-error {
+        background-color: #ffebee;
+        color: #c62828;
+        border: 1px solid #ef9a9a;
+      }
+
+      .alert-success {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+        border: 1px solid #a5d6a7;
+      }
+
+      .alert-info {
+        background-color: #e3f2fd;
+        color: #1565c0;
+        border: 1px solid #90caf9;
+      }
+
+      .input-group {
+        position: relative;
+        margin-bottom: 16px;
+        width: 100%;
+      }
+
+      .input-group label {
+        position: absolute;
+        top: -12px;
+        left: 12px;
+        background: #FAFAFA;
+        padding: 0 4px;
+        font-size: 14px;
+        color: #424242;
+      }
+
+      .input-group input {
+        width: 100%;
+        height: 56px;
+        padding: 0 16px;
+        border: 1px solid #424242;
+        border-radius: 8px;
+        font-size: 16px;
+        background: transparent;
+      }
+
+      .input-group input:focus {
+        outline: none;
+        border-color: #1a73e8;
+      }
+
+      .form-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+      }
+
+      .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .checkbox-group input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        border: 1px solid #424242;
+        border-radius: 4px;
+      }
+
+      .forgot-password {
+        color: #1a73e8;
+        text-decoration: none;
+        font-size: 14px;
+      }
+
+      .forgot-password:hover {
+        text-decoration: underline;
+      }
+
+      .btn-primary {
+        width: 100%;
+        height: 56px;
+        background: #1a73e8;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-bottom: 24px;
+        transition: background-color 0.3s ease;
+      }
+
+      .btn-primary:hover {
+        background: #1557b0;
+      }
+
+      .divider {
+        position: relative;
+        text-align: center;
+        margin: 24px 0;
+      }
+
+      .divider::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: #E0E0E0;
+      }
+
+      .divider span {
+        background: #FAFAFA;
+        padding: 0 16px;
+        color: #212121;
+        font-size: 14px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .btn-google {
+        width: 100%;
+        height: 48px;
+        background: #fff;
+        border: 1px solid #dadce0;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: #3c4043;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        margin-bottom: 24px;
+        transition: background-color 0.3s ease;
+      }
+
+      .btn-google:hover {
+        background: #f8f9fa;
+      }
+
+      .btn-google img {
+        width: 24px;
+        height: 24px;
+      }
+
+      .register-link {
+        text-align: center;
+        color: #424242;
+        font-size: 14px;
+      }
+
+      .register-link a {
+        color: #1a73e8;
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      .register-link a:hover {
+        text-decoration: underline;
+      }
+
+      .slide-section {
+        width: 380px;
+        margin-left: 48px;
+        color: #fff;
+      }
+
+      .slide-content h2 {
+        font-size: 48px;
+        margin-bottom: 24px;
+      }
+
+      .slide-content p {
+        font-size: 18px;
+        line-height: 1.5;
+      }
+
+      @media (max-width: 768px) {
+        .slide-section {
+          display: none;
+        }
+
+        .login-section {
+          width: 100%;
+          max-width: 460px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="background-overlay"></div>
+      <div class="content-wrapper">
+        <div class="login-section">
+          <div class="header">
+            <h2>Welcome back</h2>
+            <h1>Login to Your Account</h1>
+          </div>
+
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+
+          <form method="POST" action="{{ url_for('signin') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            
+            <div class="input-group">
+              <label for="email">Email</label>
+              <input 
+                type="email" 
+                id="email" 
+                name="email" 
+                placeholder="Enter your email"
+                required 
+              />
+            </div>
+
+            <div class="input-group">
+              <label for="password">Password</label>
+              <input 
+                type="password" 
+                id="password" 
+                name="password" 
+                placeholder="Enter your password"
+                required 
+              />
+            </div>
+
+            <div class="form-options">
+              <div class="checkbox-group">
+                <input type="checkbox" id="remember" name="remember" />
+                <label for="remember">Remember me</label>
+              </div>
+              <a href="#" class="forgot-password">Forgot Password?</a>
+            </div>
+
+            <button type="submit" class="btn-primary">LOGIN</button>
+          </form>
+
+          <div class="divider">
+            <span>Or continue with</span>
+          </div>
+
+          <button class="btn-google">
+            <img src="{{ url_for('static', filename='icon/google-icon.svg') }}" alt="Google" />
+            Sign in with Google
+          </button>
+
+          <div class="register-link">
+            Don't have an account? <a href="{{ url_for('register') }}">Register here</a>
+          </div>
+        </div>
+
+        <div class="slide-section">
+          <div class="slide-content">
+            <h2>Welcome Back!</h2>
+            <p>Access your Brain Tumor Detection dashboard and continue your work.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html> 
