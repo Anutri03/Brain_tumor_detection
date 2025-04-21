@@ -5,9 +5,6 @@ import cv2
 import numpy as np
 from PIL import Image
 import io
-import tensorflow as tf
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing import image
 
 # Flask and extensions
 from flask import Flask, render_template, request, jsonify, flash, redirect, url_for, session, send_file
@@ -23,6 +20,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # Database and security
 from sqlalchemy.exc import IntegrityError
 from functools import wraps
+
+# Import prediction functions
+from predict import load_trained_model, predict_tumor
 
 app = Flask(__name__)
 # Configuration
@@ -49,6 +49,9 @@ login_manager.init_app(app)
 login_manager.login_view = 'signin'
 login_manager.login_message = 'Please log in to access this page.'
 login_manager.login_message_category = 'info'
+
+# Load the model at startup
+model = load_trained_model()
 
 ALLOWED_EXTENSIONS = {
     'dcm', 'nii', 'jpg', 'jpeg', 'png', 'tiff', 'bmp', 'nrrd', 'gz', 'pdf'
@@ -234,33 +237,6 @@ def about():
 def research():
     return render_template('research.html')
 
-# Load the trained model
-try:
-    model = load_model('efficientnetB0.keras')
-    print("Model loaded successfully")
-except Exception as e:
-    print(f"Error loading model: {str(e)}")
-    model = None
-
-def preprocess_image(img_path):
-    try:
-        # Load and preprocess the image
-        img = image.load_img(img_path, target_size=(150, 150))  # Change back to 150x150 as per training
-        img_array = image.img_to_array(img)
-        img_array = np.expand_dims(img_array, axis=0)
-        
-        # Simple normalization as used during training
-        img_array = img_array / 255.0
-        
-        # Print debug information
-        print(f"Preprocessed image shape: {img_array.shape}")
-        print(f"Preprocessed image min/max values: {img_array.min()}/{img_array.max()}")
-        
-        return img_array
-    except Exception as e:
-        print(f"Error preprocessing image: {str(e)}")
-        raise
-
 @app.route('/predict', methods=['GET', 'POST'])
 @login_required
 def predict():
@@ -292,40 +268,11 @@ def predict():
                     flash('Model not loaded. Please contact administrator.', 'error')
                     return redirect(request.url)
                 
-                # Preprocess the image
-                processed_image = preprocess_image(filepath)
+                # Make prediction using our predict.py function
+                result = predict_tumor(model, filepath)
                 
-                # Make prediction
-                prediction = model.predict(processed_image)
-                print(f"Raw prediction output: {prediction}")  # Debug print
-                
-                # Get the predicted class
-                class_names = ['glioma', 'meningioma', 'notumor', 'pituitary']
-                
-                # Get the class with highest probability
-                predicted_class_index = np.argmax(prediction[0])
-                predicted_class = class_names[predicted_class_index]
-                
-                # Get probabilities directly from model output
-                probabilities = prediction[0]
-                confidence = float(probabilities[predicted_class_index])
-                
-                # Create probability dictionary
-                class_probabilities = {}
-                for i, class_name in enumerate(class_names):
-                    prob = float(probabilities[i])
-                    print(f"Probability for {class_name}: {prob}")  # Debug print
-                    class_probabilities[class_name] = prob
-                
-                # Format the results
-                result = {
-                    'prediction': predicted_class.title(),
-                    'confidence': f'{confidence:.2%}',
-                    'image_path': os.path.join('uploads', unique_filename),
-                    'class_probabilities': class_probabilities
-                }
-                
-                print(f"Final result object: {result}")  # Debug print
+                # Add image path to result
+                result['image_path'] = os.path.join('uploads', unique_filename)
                 
                 # Store result in session for the results page
                 session['analysis_result'] = result
@@ -391,128 +338,6 @@ def not_found_error(error):
 def internal_error(error):
     db.session.rollback()
     return render_template('500.html'), 500
-
-def process_image(image_path):
-    # Read the image
-    img = cv2.imread(image_path)
-    
-    # Convert to grayscale
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    
-    # Apply Gaussian blur
-    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-    
-    # Apply threshold
-    _, thresh = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    
-    # Find contours
-    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
-    # Create processed image with tumor highlight
-    processed_img = img.copy()
-    if contours:
-        # Get the largest contour (assumed to be the tumor)
-        largest_contour = max(contours, key=cv2.contourArea)
-        cv2.drawContours(processed_img, [largest_contour], -1, (0, 255, 0), 2)
-    
-    # Create segmentation mask
-    segmentation = np.zeros_like(gray)
-    if contours:
-        cv2.drawContours(segmentation, [largest_contour], -1, 255, -1)
-    
-    # Save processed images
-    processed_path = os.path.join(app.config['UPLOAD_FOLDER'], 'processed.jpg')
-    segmentation_path = os.path.join(app.config['UPLOAD_FOLDER'], 'segmentation.jpg')
-    
-    cv2.imwrite(processed_path, processed_img)
-    cv2.imwrite(segmentation_path, segmentation)
-    
-    return processed_path, segmentation_path
-
-def generate_report_data(image_path, processed_path, segmentation_path):
-    # This is a placeholder for actual tumor detection logic
-    # In a real application, you would use your trained model here
-    tumor_detected = True
-    tumor_type = "Glioma"
-    confidence = 0.85
-    
-    return {
-        'primary_findings': f"Tumor detected with {confidence*100:.1f}% confidence",
-        'tumor_characteristics': f"Type: {tumor_type}\nSize: 2.5cm x 1.8cm\nLocation: Left frontal lobe",
-        'recommendations': [
-            "Schedule a follow-up consultation with a neurosurgeon",
-            "Consider additional imaging tests for detailed analysis",
-            "Monitor symptoms and report any changes",
-            "Discuss treatment options with your healthcare provider"
-        ],
-        'original_image': image_path,
-        'processed_image': processed_path,
-        'segmentation_image': segmentation_path
-    }
-
-@app.route('/analyze', methods=['POST'])
-def analyze():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file uploaded'}), 400
-    
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No file selected'}), 400
-    
-    if file and allowed_file(file.filename):
-        # Generate unique filename
-        filename = secure_filename(file.filename)
-        unique_filename = f"{uuid.uuid4()}_{filename}"
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-        
-        # Save uploaded file
-        file.save(filepath)
-        
-        # Process the image
-        processed_path, segmentation_path = process_image(filepath)
-        
-        # Generate report data
-        report_data = generate_report_data(filepath, processed_path, segmentation_path)
-        
-        # Generate report ID and patient ID
-        report_id = str(uuid.uuid4())
-        patient_id = str(uuid.uuid4())[:8]
-        
-        # Store report data in session or database
-        # For this example, we'll just return the data
-        return jsonify({
-            'report_id': report_id,
-            'patient_id': patient_id,
-            'success': True
-        })
-    
-    return jsonify({'error': 'Invalid file type'}), 400
-
-@app.route('/report')
-def report():
-    report_id = request.args.get('report_id')
-    patient_id = request.args.get('patient_id')
-    
-    # In a real application, you would fetch this data from a database
-    # For this example, we'll use placeholder data
-    report_data = {
-        'current_date': datetime.now().strftime('%Y-%m-%d'),
-        'patient_id': patient_id,
-        'report_id': report_id,
-        'primary_findings': "Tumor detected with 85% confidence",
-        'tumor_characteristics': "Type: Glioma\nSize: 2.5cm x 1.8cm\nLocation: Left frontal lobe",
-        'recommendations': [
-            "Schedule a follow-up consultation with a neurosurgeon",
-            "Consider additional imaging tests for detailed analysis",
-            "Monitor symptoms and report any changes",
-            "Discuss treatment options with your healthcare provider"
-        ],
-        'original_image': '/static/uploads/original.jpg',
-        'processed_image': '/static/uploads/processed.jpg',
-        'segmentation_image': '/static/uploads/segmentation.jpg'
-    }
-    
-    return render_template('report.html', **report_data)
 
 # Ensure CSRF token is available in all templates
 @app.context_processor
