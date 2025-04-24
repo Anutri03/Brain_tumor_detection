@@ -59,6 +59,14 @@ def predict_tumor(model, img_path):
         # Get class names in the same order as notebook
         class_names = ['glioma_tumor', 'no_tumor', 'meningioma_tumor', 'pituitary_tumor']
         
+        # Research paper links for each tumor type
+        research_links = {
+            'glioma_tumor': 'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2887670/',  # Glioma-specific research
+            'meningioma_tumor': 'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8068132/',  # Meningioma-specific research
+            'pituitary_tumor': 'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8068132/',  # Pituitary-specific research
+            'no_tumor': None
+        }
+        
         # Get the predicted class and confidence
         predicted_class_index = np.argmax(prediction[0])
         predicted_class = class_names[predicted_class_index]
@@ -72,7 +80,8 @@ def predict_tumor(model, img_path):
         return {
             'prediction': predicted_class,
             'confidence': confidence,
-            'class_probabilities': class_probabilities
+            'class_probabilities': class_probabilities,
+            'research_link': research_links[predicted_class]
         }
     except Exception as e:
         print(f"Error making prediction: {str(e)}")
@@ -107,5 +116,7 @@ if __name__ == "__main__":
             print("\nClass Probabilities:")
             for class_name, prob in result['class_probabilities'].items():
                 print(f"{class_name}: {prob:.2%}")
+            if result['research_link']:
+                print(f"\nResearch Paper: {result['research_link']}")
         else:
             print(f"Test image not found: {test_image}") 

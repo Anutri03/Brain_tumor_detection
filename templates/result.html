@@ -212,6 +212,14 @@
                 <div class="confidence-badge">
                     Confidence: {{ result.confidence }}
                 </div>
+                {% if result.research_link %}
+                <div class="research-link">
+                    <a href="{{ result.research_link }}" target="_blank" class="btn btn-outline">
+                        <i class="fas fa-book"></i>
+                        View Research Paper
+                    </a>
+                </div>
+                {% endif %}
             </div>
 
             <div class="result-card">
