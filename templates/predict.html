@@ -209,11 +209,60 @@
         .requirements li i {
             color: var(--success);
         }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            font-size: 1.1em;
+            cursor: pointer;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-outline:hover {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border-color: transparent;
+        }
+
+        .btn-outline i {
+            transition: transform 0.3s ease;
+        }
+
+        .btn-outline:hover i {
+            transform: scale(1.2);
+        }
+
+        .home-button-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Brain Tumor Detection</h1>
+        
+        <div class="home-button-container">
+            <a href="/" class="btn btn-outline">
+                <i class="fas fa-home"></i>
+                Home
+            </a>
+        </div>
         
         <div id="error-message" class="alert alert-error">
             <i class="fas fa-exclamation-circle"></i>

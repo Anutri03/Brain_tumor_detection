@@ -68,6 +68,7 @@ class User(UserMixin, db.Model):
     is_active = db.Column(db.Boolean, default=True)
     is_admin = db.Column(db.Boolean, default=False)
     login_attempts = db.Column(db.Integer, default=0, nullable=False)
+    scans = db.relationship('ScanHistory', backref='user', lazy=True)
     
     def __init__(self, fullname, email, password, is_admin=False):
         self.fullname = fullname
@@ -105,6 +106,25 @@ class UserSession(db.Model):
     user_agent = db.Column(db.String(200))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
+
+# Scan History Model
+class ScanHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    image_path = db.Column(db.String(255), nullable=False)
+    result = db.Column(db.String(50), nullable=False)
+    confidence = db.Column(db.Float, nullable=False)
+    type = db.Column(db.String(50))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    research_link = db.Column(db.String(255))
+
+    def __init__(self, user_id, image_path, result, confidence, type=None, research_link=None):
+        self.user_id = user_id
+        self.image_path = image_path
+        self.result = result
+        self.confidence = confidence
+        self.type = type
+        self.research_link = research_link
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -298,6 +318,23 @@ def results():
     if not result:
         flash('No analysis results found. Please upload an image first.', 'error')
         return redirect(url_for('predict'))
+    
+    # Save the scan to history
+    try:
+        new_scan = ScanHistory(
+            user_id=current_user.id,
+            image_path=result['image_path'],
+            result=result['prediction'],
+            confidence=result['confidence'],
+            type=result.get('type'),
+            research_link=result.get('research_link')
+        )
+        db.session.add(new_scan)
+        db.session.commit()
+    except Exception as e:
+        print(f"Error saving scan to history: {str(e)}")
+        # Continue even if history save fails
+    
     return render_template('result.html', result=result)
 
 @app.route('/profile')
@@ -328,6 +365,53 @@ def change_password():
     db.session.commit()
     flash('Password successfully updated.', 'success')
     return redirect(url_for('profile'))
+
+@app.route('/history')
+@login_required
+def history():
+    # Get all scans for the current user, ordered by date
+    scans = ScanHistory.query.filter_by(user_id=current_user.id)\
+        .order_by(ScanHistory.created_at.desc())\
+        .all()
+    
+    return render_template('history.html', scans=scans)
+
+@app.route('/view_scan/<int:scan_id>')
+@login_required
+def view_scan(scan_id):
+    scan = ScanHistory.query.get_or_404(scan_id)
+    if scan.user_id != current_user.id:
+        flash('You do not have permission to view this scan.', 'error')
+        return redirect(url_for('history'))
+    
+    result = {
+        'prediction': scan.result,
+        'confidence': scan.confidence,
+        'image_path': scan.image_path,
+        'type': scan.type,
+        'research_link': scan.research_link
+    }
+    
+    return render_template('result.html', result=result)
+
+@app.route('/download_report/<int:scan_id>')
+@login_required
+def download_report(scan_id):
+    scan = ScanHistory.query.get_or_404(scan_id)
+    if scan.user_id != current_user.id:
+        flash('You do not have permission to download this report.', 'error')
+        return redirect(url_for('history'))
+    
+    result = {
+        'prediction': scan.result,
+        'confidence': scan.confidence,
+        'image_path': scan.image_path,
+        'type': scan.type,
+        'research_link': scan.research_link
+    }
+    
+    session['analysis_result'] = result
+    return redirect(url_for('results'))
 
 # Error handlers
 @app.errorhandler(404)
